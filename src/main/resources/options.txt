@@ -1,0 +1,8 @@
+usage:
+        xsl-downloader-cli url destination [options..]
+
+options:    -catalog=<Path>                 # sets the path to the catalog.xml
+            -schemaPrefix=<RelativePath>    # sets the path which will be inserted as prefix in the catalog.xml
+            -schemaFolder=<Path>            # set the path where the schema files will be stored (only if you set a catalog)
+            -skipIncludes                   # do not download xsl includes
+            -verbose                        # outputs more informations
