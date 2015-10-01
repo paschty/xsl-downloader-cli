@@ -56,6 +56,10 @@ public class XSLDownloader {
         filesToDownload.add(new AbstractMap.SimpleImmutableEntry<URL, String>(url, destination));
     }
 
+    private static URL getUrl(String xslLocation) throws MalformedURLException {
+        return new URL(xslLocation);
+    }
+
     private void downloadToFile(URL url, Path destinationFile) {
         printIfVerbose("Download " + url.toString() + " to " + destinationFile.toAbsolutePath().toString());
         try (InputStream is = url.openStream()) {
@@ -67,10 +71,6 @@ public class XSLDownloader {
 
     }
 
-    private static URL getUrl(String xslLocation) throws MalformedURLException {
-        return new URL(xslLocation);
-    }
-
     public void download() throws IOException, JDOMException {
         Map.Entry<URL, String> nextFile;
         while ((nextFile = filesToDownload.poll()) != null) {
@@ -78,16 +78,16 @@ public class XSLDownloader {
         }
 
         final Iterator<URL> xsdIterator = this.xsdToDownload.iterator();
-        while(xsdIterator.hasNext()){
+        while (xsdIterator.hasNext()) {
             URL xsd = xsdIterator.next();
             final String schemaFolder = getSchemaFolder();
             Path destinationPath = FileSystems.getDefault().getPath(schemaFolder + getFileName(xsd));
-            downloadToFile(xsd,destinationPath);
+            downloadToFile(xsd, destinationPath);
         }
     }
 
     private String getSchemaFolder() {
-        return options.getSchemaFolder().endsWith("/") ? options.getSchemaFolder(): options.getSchemaFolder()+"/";
+        return options.getSchemaFolder().endsWith("/") ? options.getSchemaFolder() : options.getSchemaFolder() + "/";
     }
 
     private void downloadXSL(URL xslUrl, String destination) throws IOException, JDOMException {
@@ -168,8 +168,10 @@ public class XSLDownloader {
                     try {
                         final URL url = new URL(loc);
                         String schemaPrefix = options.getSchemaPrefix();
-                        if(schemaPrefix == null){
-                            schemaPrefix = catalogPath.getParent().relativize(FileSystems.getDefault().getPath(getSchemaFolder())).toString()+"/";
+                        if (schemaPrefix == null) {
+                            final Path schemaFolderPath = FileSystems.getDefault().getPath(getSchemaFolder());
+                            final Path relativePath = catalogPath.toAbsolutePath().getParent().relativize(schemaFolderPath.toAbsolutePath());
+                            schemaPrefix = relativePath.toString() + "/";
                         }
 
                         newSystemEntry.setAttribute("uri", schemaPrefix + getFileName(url));
@@ -203,7 +205,7 @@ public class XSLDownloader {
                 final String localFileName = getFileName(includeUrl);
                 printIfVerbose("Map remote file " + includeUrl.toString() + " to " + localFileName);
                 if (!urlLocalFileMap.containsKey(includeUrl)) {
-                    final String dest = destinationPath.getParent().toString() + "/" + localFileName;
+                    final String dest = destinationPath.toAbsolutePath().getParent().toString() + "/" + localFileName;
                     urlLocalFileMap.put(includeUrl, dest);
                     filesToDownload.add(new AbstractMap.SimpleEntry<>(includeUrl, dest));
                 }
